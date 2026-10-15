@@ -1,15 +1,57 @@
+
 <?php
 if (isset($_POST['update']) && $_SERVER['REQUEST_METHOD'] === "POST") {
-    $id = $_POST['id'];
-    $title = $_POST['title'];
-    $isbn = $_POST['isbn'];
-    $year = $_POST['year'];
-    $stock = $_POST['stock'];
-    $categoryId = $_POST['category_id'];
-    $description = $_POST['description'];
-    $authorIds = isset($_POST['author_ids']) ? $_POST['author_ids'] : [];
+    try {
+        $pdo->beginTransaction();
+
+        $title = htmlspecialchars($_POST['title']);
+        $isbn = htmlspecialchars($_POST['isbn']);
+        $year = htmlspecialchars($_POST['year']);
+        $stock = htmlspecialchars($_POST['stock']);
+        $categoryId = htmlspecialchars($_POST['category_id']);
+        $description = htmlspecialchars($_POST['description']);
+
+        $authorIds = isset($_POST['author_ids']) ? $_POST['author_ids'] : [];
+
+        $query = "update books set title = :title, isbn = :isbn,year = :year, stock = :stock, category_id, description = :description where id =:id";
+        $stmt = $pdo->prepare($query);
+        $stmt ->execute([
+            'title' => $title,
+            'isbn' => $isbn,
+            'year' => $year,
+            'stock' => $stock,
+            'category_id' => $categoryId,
+            'description' => $description,
+            'id' => $id,
+        ]);
+
+        $query = "delete from book_author where book_id = id";
+        $stmt = $pdo->prepare($query);
+        $stmt -> execute([
+            'book_id' => $id
+        ]);
+
+        $query ="INSERT INTO book_author (book_id, author_id) values (:book_id, :author_id)";
+        $stmt = $pdo->prepare($query);
+        $authorIds = isset($_POST['author_ids']) ? $_POST['author_ids'] : [];
+        foreach($authorIds as $authorId) {
+            $stmt->execute([
+             'book_id' => $id,
+             'author_id' => htmlspecialchars($authorId)               
+            ]);
+        }
+
+        $pdo -> commit();
+        header ('Location: ../../pages/books/index.html');
+
+    } catch (PDOException $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        throw $e;
+    }
 
     print_r($_POST);
 }
-
 ?>
