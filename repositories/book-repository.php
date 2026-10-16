@@ -4,8 +4,8 @@ require_once __DIR__ ."/../config/database.php";
 function getBooks()
 {
   global $pdo;
-  $query = "select b.id, b.title, b.stock, c.name as category fro books b
-            left join categories on b.category_id = c.id
+  $query = "select b.id, b.title, b.stock, c.name as category from books b
+            left join categories c on b.category_id = c.id
             ";
   $stmt = $pdo->prepare($query);
   $stmt->execute();
@@ -27,7 +27,7 @@ function getBooks()
   }
 
   foreach($books as $index => $book)
-    $books[$index]['author'] = $bookByAuthors[$book['id']] ?? [];
+    $books[$index]['authors'] = $bookByAuthors[$book['id']] ?? [];
 
 
   return $books;
@@ -37,7 +37,7 @@ function getBook($id)
 {
   global $pdo;
 
-  $query = " select id, title, isbn, year, stock, category_id, description from books where = :id";
+  $query = " select id, title, isbn, year, stock, category_id, description from books where id = :id";
   $stmt = $pdo->prepare($query);
   $stmt ->execute([
     'id' => $id
@@ -50,9 +50,9 @@ function getBook($id)
     header("Location: ../pages/books/index.php");
     exit;
   }
-  $query = " select a.id from book_author ba
+  $query = "select a.id from book_author ba
             left join authors a on ba.author_id = a.id
-            where ba.book_id :book_id
+            where ba.book_id = :book_id
             ";
   $stmt = $pdo->prepare($query);
   $stmt->execute([

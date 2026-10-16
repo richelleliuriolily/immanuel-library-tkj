@@ -13,7 +13,7 @@ if (isset($_POST['store']) && $_SERVER['REQUEST_METHOD'] === "POST") {
         $categoryId = htmlspecialchars  ($_POST ['category_id']);
 
         $query = "insert into books (title, isbn, year, stock, description, category_id)
-        values (:title, :isbn, :stock, :description)
+        values (:title, :isbn, :year, :stock, :description, :category_id)
         ";
         $stmt = $pdo->prepare($query);
         $stmt->execute([

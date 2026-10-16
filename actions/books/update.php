@@ -1,9 +1,11 @@
 
 <?php
+require_once __DIR__."/../../config/database.php";
 if (isset($_POST['update']) && $_SERVER['REQUEST_METHOD'] === "POST") {
     try {
         $pdo->beginTransaction();
 
+        $id = htmlspecialchars($_POST['id']);
         $title = htmlspecialchars($_POST['title']);
         $isbn = htmlspecialchars($_POST['isbn']);
         $year = htmlspecialchars($_POST['year']);
@@ -11,9 +13,7 @@ if (isset($_POST['update']) && $_SERVER['REQUEST_METHOD'] === "POST") {
         $categoryId = htmlspecialchars($_POST['category_id']);
         $description = htmlspecialchars($_POST['description']);
 
-        $authorIds = isset($_POST['author_ids']) ? $_POST['author_ids'] : [];
-
-        $query = "update books set title = :title, isbn = :isbn,year = :year, stock = :stock, category_id, description = :description where id =:id";
+        $query = "update books set title = :title, isbn = :isbn, year = :year, stock = :stock, category_id = :category_id, description = :description where id =:id";
         $stmt = $pdo->prepare($query);
         $stmt ->execute([
             'title' => $title,
@@ -25,7 +25,7 @@ if (isset($_POST['update']) && $_SERVER['REQUEST_METHOD'] === "POST") {
             'id' => $id,
         ]);
 
-        $query = "delete from book_author where book_id = id";
+        $query = "delete from book_author where book_id = :book_id";
         $stmt = $pdo->prepare($query);
         $stmt -> execute([
             'book_id' => $id
@@ -45,10 +45,7 @@ if (isset($_POST['update']) && $_SERVER['REQUEST_METHOD'] === "POST") {
         header ('Location: ../../pages/books/index.html');
 
     } catch (PDOException $e) {
-        if ($pdo->inTransaction()) {
-            $pdo->rollBack();
-        }
-
+        $pdo->rollBack();
         throw $e;
     }
 
