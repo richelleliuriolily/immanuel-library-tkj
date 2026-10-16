@@ -49,6 +49,5 @@ if (isset($_POST['update']) && $_SERVER['REQUEST_METHOD'] === "POST") {
         throw $e;
     }
 
-    print_r($_POST);
 }
 ?>
